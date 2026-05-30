@@ -1,3 +1,5 @@
+import asyncio
+
 from sqlalchemy.exc import IntegrityError
 
 from app.core.database import SessionLocal
@@ -48,6 +50,20 @@ def poll_all_cities() -> dict:
 
     finally:
         db.close()
+
+
+async def run_polling_loop(interval_seconds: int) -> None:
+    """Run weather polling forever using the configured interval."""
+    while True:
+        try:
+            result = await asyncio.to_thread(poll_all_cities)
+            print(f"Polling cycle complete: {result}")
+            await asyncio.sleep(interval_seconds)
+        except asyncio.CancelledError:
+            raise
+        except Exception as e:
+            print(f"Polling loop error: {e}")
+            await asyncio.sleep(interval_seconds)
 
 
 if __name__ == "__main__":
