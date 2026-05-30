@@ -7,7 +7,7 @@ from app.services.event_detection.detectors import (
 	detect_wind_escalation,
 )
 
-# Note: these tests are focused on the core logic of the detectors and do not require database access or full event persistence. They directly call the detector functions with crafted WeatherReading inputs to verify correct event candidate generation.
+# Note: these tests directly tests detector logic with crafted WeatherReading inputs.
 
 # FreezeThawRisk Detector Tests
 def test_freeze_thaw_risk_fires_on_crossing_zero():
@@ -59,6 +59,33 @@ def test_freeze_thaw_risk_does_not_fire_without_crossing_zero():
 		precipitation=0.0,
 		wind_speed_10m=11.0,
 		weather_code=2,
+	)
+
+	events = detect_freeze_thaw_risk(current, [previous])
+
+	assert events == []
+
+
+def test_freeze_thaw_risk_does_not_fire_for_vancouver_even_if_crossing_zero():
+	now = datetime(2026, 5, 30, 12, 0, 0)
+	previous = WeatherReading(
+		city="Vancouver",
+		observed_at=now - timedelta(hours=1),
+		temperature_2m=1.5,
+		apparent_temperature=1.0,
+		precipitation=0.0,
+		wind_speed_10m=8.0,
+		weather_code=3,
+	)
+	current = WeatherReading(
+		id=107,
+		city="Vancouver",
+		observed_at=now,
+		temperature_2m=-0.5,
+		apparent_temperature=-1.2,
+		precipitation=0.1,
+		wind_speed_10m=10.0,
+		weather_code=71,
 	)
 
 	events = detect_freeze_thaw_risk(current, [previous])
