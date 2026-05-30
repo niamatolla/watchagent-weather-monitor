@@ -1,0 +1,31 @@
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Testing
+.pytest_cache/
+
+# Environment variables
+.env
+
+# SQLite database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Keep data folder tracked, ignore runtime database files in it
+!data/
+!data/.gitkeep
+data/**/*.db
+data/**/*.sqlite
+data/**/*.sqlite3
+
+# Mac
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
