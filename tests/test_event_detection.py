@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from app.models.reading import WeatherReading
 from app.services.event_detection.detectors import (
+	detect_cross_city_temperature_spread,
 	detect_freeze_thaw_risk,
 	detect_rapid_temperature_drop,
 	detect_wind_escalation,
@@ -202,5 +203,91 @@ def test_wind_escalation_does_not_fire_below_jump_and_absolute_thresholds():
 	)
 
 	events = detect_wind_escalation(current, [previous])
+
+	assert events == []
+
+
+# CrossCityTemperatureSpread Detector Tests
+def test_cross_city_temperature_spread_fires_for_ottawa_2_toronto_5_vancouver_16():
+	now = datetime(2026, 5, 30, 12, 0, 0)
+	ottawa = WeatherReading(
+		id=201,
+		city="Ottawa",
+		observed_at=now,
+		temperature_2m=2.0,
+		apparent_temperature=1.0,
+		precipitation=0.0,
+		wind_speed_10m=15.0,
+		weather_code=3,
+	)
+	toronto = WeatherReading(
+		id=202,
+		city="Toronto",
+		observed_at=now,
+		temperature_2m=5.0,
+		apparent_temperature=4.0,
+		precipitation=0.0,
+		wind_speed_10m=12.0,
+		weather_code=2,
+	)
+	vancouver = WeatherReading(
+		id=203,
+		city="Vancouver",
+		observed_at=now,
+		temperature_2m=16.0,
+		apparent_temperature=15.0,
+		precipitation=0.0,
+		wind_speed_10m=10.0,
+		weather_code=1,
+	)
+
+	events = detect_cross_city_temperature_spread(
+		ottawa,
+		[ottawa, toronto, vancouver],
+	)
+
+	assert len(events) == 1
+	assert events[0].event_type == "CrossCityTemperatureSpread"
+	assert events[0].severity == "Informational"
+	assert events[0].city == "REGIONAL"
+
+
+def test_cross_city_temperature_spread_does_not_fire_when_spread_is_small():
+	now = datetime(2026, 5, 30, 12, 0, 0)
+	ottawa = WeatherReading(
+		id=204,
+		city="Ottawa",
+		observed_at=now,
+		temperature_2m=9.0,
+		apparent_temperature=8.0,
+		precipitation=0.0,
+		wind_speed_10m=9.0,
+		weather_code=2,
+	)
+	toronto = WeatherReading(
+		id=205,
+		city="Toronto",
+		observed_at=now,
+		temperature_2m=11.0,
+		apparent_temperature=10.0,
+		precipitation=0.0,
+		wind_speed_10m=10.0,
+		weather_code=2,
+	)
+	vancouver = WeatherReading(
+		id=206,
+		city="Vancouver",
+		observed_at=now,
+		temperature_2m=14.0,
+		apparent_temperature=13.0,
+		precipitation=0.0,
+		wind_speed_10m=8.0,
+		weather_code=1,
+	)
+
+	events = detect_cross_city_temperature_spread(
+		ottawa,
+		[ottawa, toronto, vancouver],
+	)
 
 	assert events == []

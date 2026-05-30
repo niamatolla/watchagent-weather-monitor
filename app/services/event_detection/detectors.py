@@ -211,8 +211,8 @@ def detect_cross_city_temperature_spread(
     reading: WeatherReading,
     recent_readings: list[WeatherReading],
 ) -> list[EventCandidate]:
-    """Fire when cross-city max-min temperature spread is >= 15C"""
-    SPREAD_THRESHOLD_C = 15.0
+    """Fire when cross-city max-min temperature spread is >= 14C"""
+    SPREAD_THRESHOLD_C = 14.0
 
     # Build latest snapshot per city up to this reading timestamp.
     snapshot_candidates = [
