@@ -6,6 +6,6 @@ from app.models import reading, event
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title=settings.app_name)
+app = FastAPI(title=settings.app_name, version=settings.app_version)
 
 app.include_router(router)
