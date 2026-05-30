@@ -26,7 +26,7 @@ def detect_rapid_temperature_drop(
     recent_readings: list[WeatherReading],
 ) -> list[EventCandidate]:
     """
-    Fires when temperature drops >= 6C within a 3-hour window.
+    Fires when temperature drops >= 6C within a 3-hour window
     Change based trigger
     """
     THRESHOLD_DROP = 6.0
@@ -78,7 +78,7 @@ def detect_freeze_thaw_risk(
     reading: WeatherReading,
     recent_readings: list[WeatherReading],
 ) -> list[EventCandidate]:
-    """Fire when temperature crosses above/below 0C within a 6-hour window."""
+    """Fire when temperature crosses above/below 0C within a 6-hour window"""
     WINDOW_HOURS = 6
     FREEZING_POINT_C = 0.0
 
@@ -141,7 +141,7 @@ def detect_wind_escalation(
     reading: WeatherReading,
     recent_readings: list[WeatherReading],
 ) -> list[EventCandidate]:
-    """Fire when wind escalates quickly or reaches high absolute speed."""
+    """Fire when wind escalates quickly or reaches high absolute speed"""
     ESCALATION_THRESHOLD_KMH = 20.0
     HIGH_WIND_THRESHOLD_KMH = 50.0
 
@@ -211,7 +211,7 @@ def detect_cross_city_temperature_spread(
     reading: WeatherReading,
     recent_readings: list[WeatherReading],
 ) -> list[EventCandidate]:
-    """Fire when cross-city max-min temperature spread is >= 15C."""
+    """Fire when cross-city max-min temperature spread is >= 15C"""
     SPREAD_THRESHOLD_C = 15.0
 
     # Build latest snapshot per city up to this reading timestamp.
