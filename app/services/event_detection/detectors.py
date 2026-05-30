@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 FREEZE_THAW_CITIES = {"Ottawa", "Toronto"}  # Vancouver rarely freezes
 
-# Helpers
+# Helpers 
 def _get_window(
     readings: list[WeatherReading],
     reference_time: datetime,
@@ -42,7 +42,7 @@ def detect_rapid_temperature_drop(
         logger.debug("RapidTemperatureDrop: no history window for %s", reading.city)
         return []
 
-    # Smoothed drop: compare the average of the earliest and latest segment.
+    # Smoothed drop compare the average of the earliest and latest segment.
     segment_size = 2 if len(window) >= 4 else 1
     start_avg = sum(r.temperature_2m for r in window[:segment_size]) / segment_size
     end_avg = sum(r.temperature_2m for r in window[-segment_size:]) / segment_size

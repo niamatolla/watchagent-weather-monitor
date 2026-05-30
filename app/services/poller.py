@@ -4,19 +4,21 @@ from sqlalchemy.exc import IntegrityError
 
 from app.core.database import SessionLocal
 from app.models.reading import WeatherReading
+from app.services.event_detection.engine import detect_city_events, detect_regional_events
 from app.services.weather_client import CITY_COORDS, fetch_current_weather
 
 
-def save_reading(db, reading_data: dict) -> bool:
-    """Insert a reading and return True if inserted False if duplicate (DB constraint)"""
+def save_reading(db, reading_data: dict) -> WeatherReading | None:
+    """Insert a reading and return persisted row, or None when duplicate."""
     reading = WeatherReading(**reading_data)
     db.add(reading)
     try:
         db.commit()
-        return True
+        db.refresh(reading)
+        return reading
     except IntegrityError:
         db.rollback()
-        return False
+        return None
 
 
 def poll_all_cities() -> dict:
@@ -26,6 +28,7 @@ def poll_all_cities() -> dict:
     result = {
         "inserted": 0,
         "skipped": 0,
+        "events_created": 0,
         "errors": [],
     }
 
@@ -33,11 +36,16 @@ def poll_all_cities() -> dict:
         for city in CITY_COORDS.keys():
             try:
                 reading_data = fetch_current_weather(city)
-                inserted = save_reading(db, reading_data)
+                inserted_reading = save_reading(db, reading_data)
 
-                if inserted:
+                if inserted_reading:
                     result["inserted"] += 1
                     print(f"Inserted reading for {city}")
+
+                    city_events = detect_city_events(db, inserted_reading)
+                    if city_events:
+                        result["events_created"] += len(city_events)
+                        print(f"Generated {len(city_events)} city event(s) for {city}")
                 else:
                     result["skipped"] += 1
                     print(f"Skipped duplicate for {city}")
@@ -45,6 +53,15 @@ def poll_all_cities() -> dict:
             except Exception as e:
                 result["errors"].append({"city": city, "error": str(e)})
                 print(f"Error polling {city}: {e}")
+
+        try:
+            regional_events = detect_regional_events(db)
+            if regional_events:
+                result["events_created"] += len(regional_events)
+                print(f"Generated {len(regional_events)} regional event(s)")
+        except Exception as e:
+            result["errors"].append({"city": "REGIONAL", "error": str(e)})
+            print(f"Error detecting regional events: {e}")
 
         return result
 

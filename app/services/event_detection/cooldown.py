@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
-
 from sqlalchemy.orm import Session
-
 from app.models.event import WeatherEvent
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 COOLDOWN_HOURS: dict[str, int] = {
@@ -21,6 +22,7 @@ def is_on_cooldown(
 ) -> bool:
 	"""Return True when the same event type already fired recently for a city."""
 	hours = COOLDOWN_HOURS.get(event_type, 3)
+	# Calculate the cutoff time for cooldown
 	cutoff = observed_at - timedelta(hours=hours)
 
 	recent_event = (
@@ -33,5 +35,13 @@ def is_on_cooldown(
 		.order_by(WeatherEvent.observed_at.desc(), WeatherEvent.id.desc())
 		.first()
 	)
+
+	if recent_event:
+		logger.info(
+			"Event '%s' for city '%s' is on cooldown until %s",
+			event_type,
+			city,
+			recent_event.observed_at + timedelta(hours=hours),
+		)
 
 	return recent_event is not None
