@@ -151,3 +151,41 @@ Implemented positive vs negative cases:
 | CrossCityTemperatureSpread | Ottawa `2°C`, Toronto `5°C`, Vancouver `16°C` fires | Ottawa `9°C`, Toronto `11°C`, Vancouver `14°C` does not fire |
 
 The negative cases are as important as the positives. They prove detectors are selective and avoid reporting normal variation as notable events.
+
+### Deduplication Test Coverage
+
+The deduplication behavior is validated in `tests/test_deduplication.py`.
+
+Test scenario:
+1. `fetch_current_weather("Ottawa")` is mocked to return the same payload (`city + observed_at`) on repeated calls.
+2. `poll_all_cities()` runs twice.
+3. The database is queried for Ottawa at that exact `observed_at`.
+
+Assertions:
+- First poll inserts one row.
+- Second poll skips as duplicate.
+- Final row count for `(city="Ottawa", observed_at=<same timestamp>)` is exactly `1`.
+
+This proves the unique `(city, observed_at)` dedup path is working as intended.
+
+### API Shape Test Coverage
+
+API contract and payload shape are validated in `tests/test_api.py` with a seeded in-memory SQLite dataset.
+
+Covered endpoints:
+1. `/health`
+- Asserts status `200`.
+- Asserts response keys: `status`, `readings_stored`, `events_stored`.
+- Asserts seeded counts are correct.
+
+2. `/readings`
+- Asserts status `200`.
+- Asserts top-level shape `{ "readings": [...] }`.
+- Asserts reading object contains all expected stored fields.
+- Asserts ordering is most recent first.
+
+3. `/events`
+- Asserts status `200`.
+- Asserts top-level shape `{ "events": [...] }`.
+- Asserts event object contains all expected stored fields.
+- Asserts filtering by `city` and `event_type` works on seeded data.
