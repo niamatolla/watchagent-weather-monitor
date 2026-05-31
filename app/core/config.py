@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
     app_name: str = "WatchAgent Weather Monitor"
     database_url: str
-    app_version: str
+    app_version: str = "1.0.0"
     allowed_cities: Annotated[tuple[str, ...], NoDecode] = (
         "Ottawa",
         "Toronto",
