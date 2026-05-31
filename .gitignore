@@ -29,3 +29,7 @@ data/**/*.sqlite3
 # IDEs
 .vscode/
 .idea/
+
+# Cursor generated files 
+.cursor/cache/
+.cursor/tmp/
