@@ -20,6 +20,7 @@ class Settings(BaseSettings):
         "Toronto",
         "Vancouver",
     )
+    poller_enabled: bool = True
     poll_interval_seconds: int = Field(default=900, ge=1)
 
     @field_validator("allowed_cities", mode="before")

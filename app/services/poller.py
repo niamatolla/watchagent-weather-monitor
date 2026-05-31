@@ -1,11 +1,18 @@
 import asyncio
+import logging
+import signal
+import sys
 
 from sqlalchemy.exc import IntegrityError
 
+from app.core.config import settings
 from app.core.database import SessionLocal
 from app.models.reading import WeatherReading
 from app.services.event_detection.engine import detect_city_events, detect_regional_events
 from app.services.weather_client import CITY_COORDS, fetch_current_weather
+
+
+logger = logging.getLogger(__name__)
 
 
 def save_reading(db, reading_data: dict) -> WeatherReading | None:
@@ -84,4 +91,26 @@ async def run_polling_loop(interval_seconds: int) -> None:
 
 
 if __name__ == "__main__":
-    print(poll_all_cities())
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s - %(message)s",
+    )
+
+    def _shutdown_handler(signum, _frame):
+        signame = signal.Signals(signum).name
+        logger.info("Received %s, shutting down poller", signame)
+        raise SystemExit(0)
+
+    signal.signal(signal.SIGTERM, _shutdown_handler)
+    signal.signal(signal.SIGINT, _shutdown_handler)
+
+    logger.info(
+        "Starting poller loop with interval %s seconds",
+        settings.poll_interval_seconds,
+    )
+
+    try:
+        asyncio.run(run_polling_loop(settings.poll_interval_seconds))
+    except SystemExit:
+        logger.info("Poller stopped")
+        sys.exit(0)
