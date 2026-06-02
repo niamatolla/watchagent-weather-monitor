@@ -8,7 +8,7 @@ The interesting part of the problem is not fetching data (that's a few lines of 
 
 ## How it works
 
-The poller runs every 15 minutes and fetches current conditions from Open-Meteo for Ottawa, Toronto, and Vancouver. Open-Meteo updates hourly, so most polls return data that's already been stored. The system checks for duplicates before inserting —if the same combination `(city, observed_at)` already exists, it skips the insert entirely and does not run event detection.
+The poller runs every 15 minutes and fetches current conditions from Open-Meteo for Ottawa, Toronto, and Vancouver. Open-Meteo updates hourly, so most polls return data that's already been stored. The system checks for duplicates before inserting , if the same combination `(city, observed_at)` already exists, it skips the insert entirely and does not run event detection.
 
 Event detection only runs when a genuinely new reading comes in. That was an intentional design decision. Running detectors on duplicate data would either fire duplicate events or require extra logic to suppress them. Deduplicating first keeps the event detection layer clean.
 
@@ -160,7 +160,7 @@ pip install -r requirements.txt
 pytest
 ```
 
-No live API calls — everything is mocked or uses synthetic data.
+No live API calls : everything is mocked or uses synthetic data.
 
 ---
 
@@ -211,11 +211,11 @@ Two conditions because they cover different situations. The jump catches rapidly
 
 **CrossCityTemperatureSpread** — fires when the gap between the warmest and coldest monitored city hits 14°C. Regional. 6-hour cooldown. Stored as `city = "REGIONAL"`.
 
-This one doesn't look at individual cities — it looks at divergence across all three simultaneously. A 14°C spread means conditions across the country are meaningfully different, which is the kind of thing a national infrastructure monitoring context would care about.
+This one doesn't look at individual cities, it looks at divergence across all three simultaneously. A 14°C spread means conditions across the country are meaningfully different, which is the kind of thing a national infrastructure monitoring context would care about.
 
 ### What I decided not to include
 
-Precipitation and weather_code were on my list but I didn't end up using them. A precipitation threshold without a trend component fires continuously during any sustained rain. Weather_code changes are too coarse to build a reliable cooldown around — a code that jumps from 51 to 61 back to 51 in three readings would behave unpredictably. I'd rather have four detectors that each say something distinct than six detectors where two add noise.
+Precipitation and weather_code were on my list but I didn't end up using them. A precipitation threshold without a trend component fires continuously during any sustained rain. Weather_code changes are too uneven to build a reliable cooldown around, a code that jumps from 51 to 61 back to 51 in three readings would behave unpredictably. I'd rather have four detectors that each say something distinct than six detectors where two add noise.
 
 ### Cooldown table
 
@@ -245,7 +245,7 @@ If a row exists, the event is suppressed.
 
 ### Event detection
 
-Each detector has a positive case and a negative case. The negative cases matter as much as the positives — they're what proves the detectors don't fire on normal variation.
+Each detector has a positive case and a negative case. The negative cases matter as much as the positives, they're what proves the detectors don't fire on normal variation.
 
 | Detector | Fires | Does not fire |
 |---|---|---|
@@ -285,7 +285,7 @@ I validated this rule by prompting Cursor: *"Add retry logic for failed city fet
 
 This rule encodes the detector contract. Detectors are pure functions — `(reading, window) → list[EventCandidate]`. No database access inside a detector. Return `[]` not `None` when the condition isn't met. Guard against short windows before accessing previous readings. Every `EventCandidate` must have all fields populated with `reason` referencing a named constant. New detectors go into `COOLDOWN_HOURS` in `cooldown.py` and `detect_city_events()` in `engine.py`. Log skips at DEBUG, fires at INFO.
 
-I validated by prompting: *"Add a new detector for heavy precipitation."* The output passed every item on the checklist first try. I removed the detector afterward — it didn't add signal the existing four don't already cover.
+I validated by prompting: *"Add a new detector for heavy precipitation."* The output passed every item on the checklist first try. I removed the detector afterward,it didn't add signal the existing four don't already cover.
 
 **`api_and_db_conventions.md`**
 
@@ -293,7 +293,7 @@ This rule covers the API and database layer. Routes use injected `db` sessions v
 
 The rule is written to fit both the current direct route-to-query architecture and a future route-to-service architecture without needing to change.
 
-Validated by prompting: *"Add a GET /stats endpoint that returns average temperature per city."* All conventions followed on first generation. Removed the endpoint afterward — it's outside the required API contract.
+Validated by prompting: *"Add a GET /stats endpoint that returns average temperature per city."* All conventions followed on first generation. Removed the endpoint afterward, it's outside the required API contract.
 
 ### Agent
 
