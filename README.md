@@ -2,7 +2,7 @@
 
 This is my submission for the WatchAgent take-home challenge. The task was to build a service that monitors live weather across three Canadian cities, decides when something notable happens, and exposes that through an API.
 
-The interesting part of the problem is not fetching data — that's a few lines of code. The interesting part is deciding what counts as worth surfacing and what is just noise. That's what most of my design time went into.
+The interesting part of the problem is not fetching data (that's a few lines of code). The interesting part is deciding what counts as worth surfacing and what is just noise. That's what most of my design time went into.
 
 ---
 
@@ -193,7 +193,7 @@ I also added cooldowns to every detector. Without cooldowns, a sustained storm w
 
 ### Why events_stored shows 0 in late May
 
-This is expected. None of the four detectors have thresholds that apply to stable spring conditions in Canada. There are no cold fronts, no freeze-thaw transitions, no severe wind events in late May. The system is supposed to be quiet when nothing notable is happening — that's the whole point. The unit tests verify that detection logic fires correctly when conditions warrant it. They use synthetic readings specifically because I can't rely on live weather to produce test events.
+This is expected. None of the four detectors have thresholds that apply to stable spring conditions in Canada. There are no cold fronts, no freeze-thaw transitions, no severe wind events in late May. The system is supposed to be quiet when nothing notable is happening , that's the whole point. The unit tests verify that detection logic fires correctly when conditions warrant it. They use synthetic readings specifically because I can't rely on live weather to produce test events.
 
 ### The four detectors
 
